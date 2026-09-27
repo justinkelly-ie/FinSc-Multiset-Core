@@ -1,21 +1,21 @@
 module Core
 
-import public Core.BoxInt
-import public Core.Multiset
-import public Core.MultisetTree
-import public Core.MultisetTensor
-import public Core.UnixelFraction
-import public Core.VexelMaxel
-import public Core.Polynumber
-import public Core.OnSeq
-import public Core.FourGeometries
-import public Core.ScaleTransform
-import public Core.Order.Preorder
-import public Core.Category.Adjunction
-import public Core.TypeTheory.TwoLevel
-import public Core.TypeTheory.ThreeLevel
-import public Math.PrimeMultiset
-import public Math.OnSeq.FusedStream
+import public Stage0.BoxInt
+import public Stage0.WitnessLedger
+import public Stage0.BoxNat
+import public Stage0.Multiset
+import public Stage0.OnSeq.FusedStream
+import public Stage1.Category.Adjunction
+import public Stage1.Category.Comonad
+import public Stage1.FourGeometries
+import public Stage1.MultisetTensor
+import public Stage1.MultisetTree
+import public Stage1.QuadStream
+import public Stage1.OnSeq
+import public Stage1.TypeTheory.TwoLevel
+import public Stage1.TypeTheory.Staging
+import public Stage1.TypeTheory.MultisetLevel
+import public Stage1.UnixelFraction
+import public Stage1.VexelMaxel
 
 %default total
-

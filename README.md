@@ -3,9 +3,9 @@
 [![Idris 2 Verification](https://img.shields.io/badge/Idris_2-0.8.0-blue.svg)](https://www.idris-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Layer 1 Base Discrete Box Arithmetic, Multisets & Galois Order Foundations for Idris 2**
+**Layer 1 Base Discrete Box Arithmetic, Multisets & Multiset Adjunction Foundations for Idris 2**
 
-`FinSc-Multiset-Core` forms **Layer 1** of the 10-layer constructive non-linear multiset science framework. It provides foundational discrete mathematical primitives, multiset monoids, linear QTT resource channels, scale transformation interfaces, and Galois connection posets—all built without continuous real numbers or floating-point approximations.
+`FinSc-Multiset-Core` forms **Layer 1** of the 10-layer constructive non-linear multiset science framework. It provides foundational discrete mathematical primitives, multiset monoids, linear QTT resource channels, scale transformation interfaces, and multiset adjunction posets—all built without continuous real numbers or floating-point approximations.
 
 ---
 
@@ -35,9 +35,9 @@
 - **Functorial Scale Interfaces:** Open algebraic interfaces `ScaleTransform domainA domainB` and bidirectional `InvertibleScaleTransform domainA domainB`.
 - **Pipeline Composition:** Scale pipeline composition (`composeScaleTransform`, `composeInvertibleScaleTransform`) establishing scale-invariant mapping across physical domains.
 
-### 6. `Core.Order.Preorder` & `Core.Order.GaloisConnection`
+### 6. `Core.Order.Preorder` & Multiset Adjunctions
 - **Preordered Monoids:** Poset structure (`PreorderedMonoid`) parameterizing state spaces with monotonic preorder bounds.
-- **Galois Adjunction Duality ($f_* \dashv f^*$):** Generic domain-agnostic Galois connection interface (`GaloisConnection concrete abstractDomain`) formalizing abstraction ($\alpha: C \to A$) and concretization ($\gamma: A \to C$) maps with verified monotonicity and adjunction identity witnesses.
+- **Multiset Adjunction Duality ($L \dashv R$):** Category-theoretic hom-tensor multiset adjunction interface (`MultisetAdjunction L R`) formalizing exact hom-tensor isomorphisms ($\text{MultisetTensor } (L a) b \cong \text{MultisetTensor } a (R b)$) and bidirectional scale transforms.
 
 ---
 
