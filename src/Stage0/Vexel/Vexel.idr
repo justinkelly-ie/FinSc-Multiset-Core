@@ -14,6 +14,11 @@ public export
 Vexel : (c : Type) -> (a : Type) -> Type
 Vexel c a = Multiset c (Sing a)
 
+||| Canonical unambiguous alias for polymorphic multiset state vectors.
+public export
+GenericVexel : (c : Type) -> (a : Type) -> Type
+GenericVexel = Vexel
+
 ||| Checks if a singleton is full (non-zero).
 ||| Since Sing always holds a value, any Sing a is always full.
 public export

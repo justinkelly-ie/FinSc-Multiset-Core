@@ -43,6 +43,16 @@ record Pixel where
   row : Nat
   col : Nat
 
+||| Canonical unambiguous alias for discrete 2D grid matrix cells.
+public export
+GridPixel : Type
+GridPixel = Pixel
+
+||| Alternative alias for cell coordinate.
+public export
+CellPixel : Type
+CellPixel = Pixel
+
 %inline public export
 pixelEq : Pixel -> Pixel -> Bool
 pixelEq (MkPixel r1 c1) (MkPixel r2 c2) = if natEq r1 r2 then natEq c1 c2 else False
@@ -105,6 +115,11 @@ public export
 record Vexel where
   constructor MkVexel
   terms : List (Unixel, BoxInt)
+
+||| Canonical unambiguous alias for discrete monomorphic 1D Wildberger vectors.
+public export
+DiscreteVexel : Type
+DiscreteVexel = Vexel
 
 public export
 Eq Vexel where

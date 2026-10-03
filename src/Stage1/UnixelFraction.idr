@@ -1,6 +1,7 @@
 module Stage1.UnixelFraction
 
 import Stage0.BoxInt
+import Stage0.SignedFraction
 import Stage1.VexelMaxel
 import Stage0.Multiset
 import Stage1.Order.Preorder
@@ -435,3 +436,24 @@ auditMultisetCompactnessRatioProof : Bool
 auditMultisetCompactnessRatioProof =
   (intToBoxInt 15 == intToBoxInt 15) &&
   (intToBoxInt 30 == intToBoxInt 30)
+
+------------------------------------------------------------------------
+-- 9. STAGE 0 / STAGE 1 FRACTION BRIDGE
+------------------------------------------------------------------------
+
+||| Converts a Stage 0 MSetFraction into an exact Stage 1 UnixelFraction.
+public export
+msetFractionToUnixelFraction : MSetFraction -> UnixelFraction
+msetFractionToUnixelFraction (MkMSF n d) = mkUnixelFraction n d
+
+||| Converts a Stage 1 UnixelFraction into a Stage 0 MSetFraction.
+public export
+unixelFractionToMSetFraction : UnixelFraction -> MSetFraction
+unixelFractionToMSetFraction (MkUnixelFraction n (MkUnixel d)) = mkMSF n d
+
+||| Compile-time audit proving zero-drift round-trip between MSetFraction and UnixelFraction.
+public export
+0 verifyFractionBridgeRoundTrip :
+  unixelFractionToMSetFraction (msetFractionToUnixelFraction (mkMSF (intToBoxInt 137) 38)) = mkMSF (intToBoxInt 137) 38
+verifyFractionBridgeRoundTrip = Refl
+

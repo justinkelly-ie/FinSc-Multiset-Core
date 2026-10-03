@@ -26,6 +26,11 @@ record Pixel (metric : Metric) (a : Type) where
   src : a
   tgt : a
 
+||| Canonical unambiguous alias for chromogeometric 3-metric pixels.
+public export
+MetricPixel : Metric -> Type -> Type
+MetricPixel = Pixel
+
 public export
 Eq a => Eq (Pixel metric a) where
   (MkPixel s1 t1) == (MkPixel s2 t2) = s1 == s2 && t1 == t2

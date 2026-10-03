@@ -4,6 +4,8 @@ import Data.Linear
 import Stage0.Interfaces
 import public Stage0.Multiset
 
+%default total
+
 ||| A Box Arithmetic Natural Multiset (BoxNat)
 ||| Parameterized over discrete Nat counts with unit element ()
 public export

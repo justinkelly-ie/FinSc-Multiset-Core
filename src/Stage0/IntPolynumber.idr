@@ -3,7 +3,6 @@ module Stage0.IntPolynumber
 import Data.List
 import Data.Linear
 import Stage0.Interfaces
-import Stage0.Polynumber
 import public Stage0.BoxInt
 import public Stage0.Multiset
 
