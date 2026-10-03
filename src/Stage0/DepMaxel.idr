@@ -4,7 +4,7 @@ import Stage0.Multiset
 import Stage0.DepMultiset
 import public Stage0.Pixel
 
-%default covering
+%default total
 
 ||| A dependently typed Maxel is a DepMultiset of Pixels.
 public export

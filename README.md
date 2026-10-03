@@ -9,52 +9,48 @@
 
 ---
 
-## 📦 Core Library Architecture & Modules
+## 📦 Core Library Architecture & Staging
 
-### 1. `Math.BoxInt`
-- **Dirac Cancellation Normalization:** Signed Box Integer arithmetic (`BoxInt = Multiset Integer SignedUnit`) operating over `Pos` and `Neg` signed units with mutual annihilation.
-- **Monomorphic Arithmetic:** Provides `addBox`, `subBox`, `multBox`, `absBox`, `boxToNat`, and `natToBox` monomorphic integer functions that eliminate typeclass method blocking during compile-time `%macro` reflection.
-- **Zero-Defect Bounds:** Exact integer counting ($v \in \mathbb{Z}$) preventing numerical drift.
+The package is strictly organized under a multi-level type theory hierarchy:
 
-### 2. `Math.Multiset`
-- **Free Commutative Monoids:** Inductive `Box` multiset container (`Box token`) tracking exact integer token multiplicities.
-- **Algebraic Operations:** Key-value lookup (`lookupBox`), insertion (`insertBox`), multiset union (`unionBox`), scalar scaling (`scaleBox`), difference (`diffBox`), and multiset zero-cancellation (`canonicalizeBox`).
-- **Monoid Laws:** Verified associativity, identity, and commutativity laws over multiset union (`++`).
+### Stage 0: Ground Discrete Arithmetic & Multiset Primitives
+- **`Stage0.BoxInt` & `Stage0.BoxNat`:** Exact integer arithmetic (`BoxInt = Multiset Integer SignedUnit`) operating over `Pos` and `Neg` signed units with mutual annihilation. Monomorphic functions (`addBox`, `subBox`, `multBox`, `boxMul`, `absBox`, `boxToNat`, `natToBox`) prevent typeclass method blocking during compile-time reflection.
+- **`Stage0.Multiset` & `Stage0.DepMultiset`:** Free commutative multiset monoids (`Box token`) tracking token multiplicities, with lookup, union, scaling, difference, and zero-cancellation.
+- **`Stage0.LinearBuffer` & `Stage0.UniverseState`:** Quantitative Type Theory (QTT) linear buffer management and discrete universe state containers.
+- **`Stage0.PrimeMultiset`:** Exact integer prime factorization as free commutative prime multisets with trial division and Goh smoothness auditing.
+- **`Stage0.Spread`:** Multiset polynomial representation of discrete spreads (`SpreadMSet = Multiset BoxInt Nat`) with functorial shift and $O(n)$ linear accumulator evaluation.
+- **`Stage0.Pixel` & `Stage0.Vexel.Byte`:** Discrete pixel coordinates and vexel byte representations with $\mathbb{F}_2$ XOR cancellation via multiset annihilation.
+- **`Stage0.Singleton`:** Singletons (`Bit`, `Bit2`, `Sing`, `SBFMset`) including tensor product representations for Galilean and non-relativistic physics.
+- **`Stage0.OnSeq.FusedStream`:** Fused stream compression pipelines with compile-time verified elliptic state transitions.
 
-### 3. `Math.LMultiset`
-- **Linear Resource Channels:** Quantitative Type Theory (QTT) linear multiset resource channels (`LMultiset`).
-- **Comonoidal Interfaces:** Typeclass contracts `LConsumable` and `LComonoid` enforcing strict linear resource conservation (multiplicity 1) at compile time.
+### Stage 1: Categorical Dualities, Staging & Topologies
+- **`Stage1.MultisetDuality` & `Stage1.HigherDuality`:** Category-theoretic multiset adjunctions ($L \dashv R$) formalizing exact hom-tensor isomorphisms ($\text{MultisetTensor } (L a) b \cong \text{MultisetTensor } a (R b)$) and higher-order dualities.
+- **`Stage1.SpatialStencil`:** Comonadic spatial stencils and discrete neighborhood operations.
+- **`Stage1.FourGeometries`:** Discrete chromogeometric framework across Euclidean, Lorentz, Hyperbolic, and Relativistic metrics.
+- **`Stage1.Topology.Boundaries`, `Peaks`, `PersistenceStream`:** Combinatorial topology, discrete boundary complexes, and persistence streams.
+- **`Stage1.TypeTheory.TwoLevel`, `Staging`, `MultisetLevel`, `Smooth13`:** Two-level type theory (2LTT) staging invariants, meta-level / object-level separation, and 13-smooth scale certificates.
+- **`Stage1.QuadStream` & `Stage1.OnSeq`:** Stratified streams, scale transformations, and discrete hylo unfoldings.
 
-### 4. `Math.DepMultiset` & Singletons
-- **`Math.DepMultiset`:** Dependent multiset specifications and type-indexed multisets (`DepMultiset`).
-- **`Math.Singleton.Bit`:** Type-safe binary `Bit` singletons (`Zero` and `One`) with `boolToBit : Bool -> Bit` conversion functions.
-- **`Math.Singleton.Sing`:** Higher-order type-level singleton containers (`Sing`).
-- **`Math.Spread` & `Math.Interfaces`:** Discrete spread/quadrance operations and core mathematical interfaces.
-
-### 5. `Core.ScaleTransform`
-- **Functorial Scale Interfaces:** Open algebraic interfaces `ScaleTransform domainA domainB` and bidirectional `InvertibleScaleTransform domainA domainB`.
-- **Pipeline Composition:** Scale pipeline composition (`composeScaleTransform`, `composeInvertibleScaleTransform`) establishing scale-invariant mapping across physical domains.
-
-### 6. `Core.Order.Preorder` & Multiset Adjunctions
-- **Preordered Monoids:** Poset structure (`PreorderedMonoid`) parameterizing state spaces with monotonic preorder bounds.
-- **Multiset Adjunction Duality ($L \dashv R$):** Category-theoretic hom-tensor multiset adjunction interface (`MultisetAdjunction L R`) formalizing exact hom-tensor isomorphisms ($\text{MultisetTensor } (L a) b \cong \text{MultisetTensor } a (R b)$) and bidirectional scale transforms.
+### Stage 2: Three-Level Type Theory
+- **`Stage2.ThreeLevel`:** Three-level type theory (3LTT) integrating compile-time metaprogramming, object-level computation, and physical witness verification.
 
 ---
 
 ## 🚀 Building & Installing
 
-Built with Idris 2 (`0.8.0`):
+Built with Idris 2 (`0.8.0`) via `pack`:
 
 ```bash
-idris2 --build FinSc-Multiset-Core.ipkg
-idris2 --install FinSc-Multiset-Core.ipkg
+pack build FinSc-Multiset-Core.ipkg
+pack install FinSc-Multiset-Core.ipkg
 ```
 
 ---
 
 ## 🔬 Architectural Principles
 
-- **Total Constructivism:** Enforces `%default total` across all library functions.
+- **Total Constructivism:** Enforces `%default total` across all library modules.
 - **Zero Floating-Point Drift:** Strict integer and exact rational multiset arithmetic without continuous real-number approximations.
 - **QTT Linearity:** Linear resource accounting preventing illegal copying or deletion of physical quanta.
-- **Elaborator Reduction:** Monomorphic arithmetic routines avoiding typeclass interface method blocking during macro reflection.
+- **Monomorphic Elaborator Reduction:** Monomorphic arithmetic routines avoiding typeclass interface method blocking during macro reflection.
+- **2LTT/3LTT Staging Discipline:** Clean stratification between object-level computation and meta-level proof reflection.

@@ -26,8 +26,8 @@ Byte state = Multiset Bit (Sing state)
 
 ||| Pointwise addition (XOR) of two Boole vectors.
 public export
-addByte : (Eq state) => Byte state -> Byte state -> Byte state
-addByte = addMultiset
+addByte : Eq state => Byte state -> Byte state -> Byte state
+addByte x y = annihilateMultiset (addMultiset x y)
 
 ||| Helper to lookup the weight of a state coordinate in a Byte.
 public export

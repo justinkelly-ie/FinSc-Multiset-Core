@@ -445,22 +445,21 @@ composeTernaryMaxels m1 m2 =
     else Nothing
 
 ||| Evaluates total interactions and computes the count of vacuum compressions (Skip).
-public export covering
+public export
 countVacuumCompressions : List TernaryMatrix -> (Nat, Nat)
-countVacuumCompressions states = loop states states 0 0
+countVacuumCompressions states = foldl outer (0, 0) states
   where
-    covering
-    loop : List TernaryMatrix -> List TernaryMatrix -> Nat -> Nat -> (Nat, Nat)
-    loop [] _ t n = (t, n)
-    loop (x :: xs) [] t n = loop xs states t n
-    loop (x :: xs) (y :: ys) t n =
-      case composeTernaryMaxels x y of
-        Nothing => loop (x :: xs) ys (t + 1) (n + 1)
-        Just _  => loop (x :: xs) ys (t + 1) n
+    inner : TernaryMatrix -> (Nat, Nat) -> TernaryMatrix -> (Nat, Nat)
+    inner x (t, n) y = case composeTernaryMaxels x y of
+      Nothing => (t + 1, n + 1)
+      Just _  => (t + 1, n)
+
+    outer : (Nat, Nat) -> TernaryMatrix -> (Nat, Nat)
+    outer acc x = foldl (inner x) acc states
 
 ||| Proof witness function confirming 324 out of 729 combinations compress to vacuum.
 public export
-verifyBootstrapCompression : (0 prf : countVacuumCompressions generate27EllipticStates = (729, 324)) -> String
+verifyBootstrapCompression : (0 prf : countVacuumCompressions Stage0.OnSeq.FusedStream.generate27EllipticStates = (729, 324)) -> String
 verifyBootstrapCompression _ = "Bootstrap structural validation verified successfully."
 
 ------------------------------------------------------------------------

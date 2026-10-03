@@ -1,51 +1,12 @@
 module Stage0.WitnessLedger
 
-import Stage0.BoxInt
+import public Stage0.BoxInt
 import Data.Nat
 
 %default total
 
 --------------------------------------------------------------------------------
--- 1. UN-DICTED MONOMORPHIC BOXINT PRIMITIVES
---------------------------------------------------------------------------------
-
-||| Fast un-dicted equality check for BoxInt scalars
-%inline public export
-boxEq : BoxInt -> BoxInt -> Bool
-boxEq (MkBoxInt a) (MkBoxInt b) = a == b
-
-||| Fast un-dicted less-than-or-equal check for BoxInt scalars
-%inline public export
-boxLTE : BoxInt -> BoxInt -> Bool
-boxLTE (MkBoxInt a) (MkBoxInt b) = a <= b
-
-||| Fast un-dicted addition for BoxInt scalars
-%inline public export
-boxAdd : BoxInt -> BoxInt -> BoxInt
-boxAdd (MkBoxInt a) (MkBoxInt b) = MkBoxInt (a + b)
-
-||| Fast un-dicted subtraction for BoxInt scalars
-%inline public export
-boxSub : BoxInt -> BoxInt -> BoxInt
-boxSub (MkBoxInt a) (MkBoxInt b) = MkBoxInt (a - b)
-
-||| Fast un-dicted multiplication for BoxInt scalars
-%inline public export
-boxMul : BoxInt -> BoxInt -> BoxInt
-boxMul (MkBoxInt a) (MkBoxInt b) = MkBoxInt (a * b)
-
-||| Fast un-dicted conversion from BoxInt to Nat
-%inline public export
-boxToNat : BoxInt -> Nat
-boxToNat (MkBoxInt v) = if v <= 0 then 0 else integerToNat v
-
-||| Fast un-dicted conversion from Nat to BoxInt
-%inline public export
-natToBox : Nat -> BoxInt
-natToBox n = MkBoxInt (natToInteger n)
-
---------------------------------------------------------------------------------
--- 2. ZERO-ERASED QTT PROOF WITNESS LEDGER
+-- 1. ZERO-ERASED QTT PROOF WITNESS LEDGER
 --------------------------------------------------------------------------------
 
 ||| QTT 0 erased proof witness verifying BoxInt identity.
@@ -85,8 +46,8 @@ prfMultisetDuality _ = Refl
 -- 3. MONOMORPHIC EQUALITY REFLEXIVITY WITNESS
 --------------------------------------------------------------------------------
 
-||| Proof witness that boxEq on identical terms returns valid identity
+||| Proof witness that a BoxInt term is propositionally equal to itself.
 public export
-0 prfBoxEqRefl : (x : BoxInt) -> (n : BoxInt) -> n = n
-prfBoxEqRefl _ _ = Refl
+0 prfBoxEqRefl : (n : BoxInt) -> n = n
+prfBoxEqRefl _ = Refl
 

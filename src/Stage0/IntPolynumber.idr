@@ -7,7 +7,7 @@ import Stage0.Polynumber
 import public Stage0.BoxInt
 import public Stage0.Multiset
 
-%default covering
+%default total
 
 ||| A highly compressed, high-performance representation of Polynomials with BoxInt coefficients.
 ||| Instead of unary MSets, we use a Run-Length Encoded dictionary grouped by (alpha power, beta power).

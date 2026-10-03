@@ -196,6 +196,40 @@ totalBoxelWeight (MkBoxel bs) =
   sum (map snd bs)
 
 ------------------------------------------------------------------------
+-- CANONICAL MULTISET ISOMORPHISMS
+------------------------------------------------------------------------
+
+||| Embeds a Vexel into its canonical discrete Multiset representation.
+public export
+vexelToMultiset : Vexel -> Multiset BoxInt Unixel
+vexelToMultiset (MkVexel terms) = fromListBox terms
+
+||| Reifies a canonical discrete Multiset representation back into a Vexel.
+public export
+multisetToVexel : Multiset BoxInt Unixel -> Vexel
+multisetToVexel m = MkVexel (multisetToList m)
+
+||| Embeds a Maxel into its canonical discrete Multiset representation.
+public export
+maxelToMultiset : Maxel -> Multiset BoxInt Pixel
+maxelToMultiset (MkMaxel pxs) = fromListBox pxs
+
+||| Reifies a canonical discrete Multiset representation back into a Maxel.
+public export
+multisetToMaxel : Multiset BoxInt Pixel -> Maxel
+multisetToMaxel m = MkMaxel (multisetToList m)
+
+||| Embeds a Boxel into its canonical discrete Multiset representation.
+public export
+boxelToMultiset : Boxel -> Multiset BoxInt Voxel
+boxelToMultiset (MkBoxel voxs) = fromListBox voxs
+
+||| Reifies a canonical discrete Multiset representation back into a Boxel.
+public export
+multisetToBoxel : Multiset BoxInt Voxel -> Boxel
+multisetToBoxel m = MkBoxel (multisetToList m)
+
+------------------------------------------------------------------------
 -- CANONICAL MULTISET REDUCTION & ZERO-PRUNING
 ------------------------------------------------------------------------
 

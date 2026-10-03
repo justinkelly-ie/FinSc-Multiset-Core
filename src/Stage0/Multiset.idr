@@ -179,6 +179,13 @@ lookupCount target ZeroM = 0
 lookupCount target (AddM k v rest) =
   if target == k then v + lookupCount target rest else lookupCount target rest
 
+||| Monomorphic BoxInt lookup in a Multiset BoxInt a, avoiding typeclass dictionary stalls.
+public export
+lookupCountBox : Eq a => a -> Multiset BoxInt a -> BoxInt
+lookupCountBox target ZeroM = intToBoxInt 0
+lookupCountBox target (AddM k v rest) =
+  if target == k then addBox v (lookupCountBox target rest) else lookupCountBox target rest
+
 ||| Canonical mathematical observable: evaluates token multiplicity m_M(x) in a multiset M.
 ||| 2LTT Staging Operation: Splicing (~t) - Monomorphic extraction alias querying token multiplicity.
 public export
@@ -228,12 +235,12 @@ multisetToList : Multiset c a -> List (a, c)
 multisetToList ZeroM = []
 multisetToList (AddM k v rest) = (k, v) :: multisetToList rest
 
-%inline public export
+public export
 fromList : (Eq a, Num c, Eq c) => List (a, c) -> Multiset c a
 fromList [] = ZeroM
 fromList ((k, v) :: rest) = insertItem k v (fromList rest)
 
-%inline public export
+public export
 fromListBox : Eq a => List (a, BoxInt) -> Multiset BoxInt a
 fromListBox [] = ZeroM
 fromListBox ((k, v) :: rest) = insertItemBox k v (fromListBox rest)

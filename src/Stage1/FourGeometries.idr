@@ -89,24 +89,25 @@ triangularNumber : Nat -> Nat
 triangularNumber n = (n * (n + 1)) `div` 2
 
 ||| Elliptic 3D lattice state capacity: 3^3 = 27 states (Baryon/Visible Matter Canvas).
-public export
+%inline public export
 ellipticLatticeCapacity : Nat
-ellipticLatticeCapacity = powerNat 3 3
+ellipticLatticeCapacity = 27
 
 ||| Hyperbolic 2D law storage ROM capacity: 2^7 = 128 states (Dark Energy ROM).
-public export
+%inline public export
 hyperbolicRomCapacity : Nat
-hyperbolicRomCapacity = powerNat 2 7
+hyperbolicRomCapacity = 128
 
 ||| Parabolic 10D metric tensor component residue: T_10 = 55 states (Dark Matter Dissipation Sink).
-public export
+%inline public export
 darkMatterTriangularResidue : Nat
-darkMatterTriangularResidue = triangularNumber 10
+darkMatterTriangularResidue = 55
 
 ||| Canonical Primorial 210 cosmic capacity budget: 27 + 128 + 55 = 210.
-public export
+%inline public export
 primorial210Budget : Nat
-primorial210Budget = ellipticLatticeCapacity + hyperbolicRomCapacity + darkMatterTriangularResidue
+primorial210Budget = 210
+
 
 ------------------------------------------------------------------------
 -- 5. TYPE-LEVEL CHROMOGEOMETRIC INVARIANCE WITNESSES

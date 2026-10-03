@@ -61,19 +61,23 @@ greenSBF = AddM (MkPixel X Y) 1 (AddM (MkPixel Y X) 1 ZeroM)
 -- 3. UNIVERSAL EVALUATION PIPELINE
 -----------------------------------------------------------------------
 
+||| Construct the tensor outer product (u ⊗ v) of two input state vectors.
+public export
+tensorProduct : (Eq (a, b), Num c, Eq c) => Multiset c a -> Multiset c b -> Multiset c (a, b)
+tensorProduct ZeroM _ = ZeroM
+tensorProduct (AddM x cx xs) ys =
+  let row = tensorWith x cx ys
+  in addMultiset row (tensorProduct xs ys)
+  where
+    tensorWith : a -> c -> Multiset c b -> Multiset c (a, b)
+    tensorWith _ _ ZeroM = ZeroM
+    tensorWith x cx (AddM y cy rest) =
+      insertItem (x, y) (cx * cy) (tensorWith x cx rest)
+
 ||| Construct the tensor self-product (v ⊗ v) of an input state vector.
 public export
 tensorSelf : (Eq a, Eq (a, a), Num c, Eq c) => Multiset c a -> Multiset c (a, a)
-tensorSelf ZeroM = ZeroM
-tensorSelf (AddM x cx rest) =
-  let current = tensorWith x cx (AddM x cx rest)
-      accumulated = tensorSelf rest
-  in addMultiset current accumulated
-  where
-    tensorWith : a -> c -> Multiset c a -> Multiset c (a, a)
-    tensorWith _ _ ZeroM = ZeroM
-    tensorWith x cx (AddM y cy ys) =
-      insertItem (x, y) (cx * cy) (tensorWith x cx ys)
+tensorSelf v = tensorProduct v v
 
 
 ||| The universal bilinear form evaluator.

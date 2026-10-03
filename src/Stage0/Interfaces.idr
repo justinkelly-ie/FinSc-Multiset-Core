@@ -1,6 +1,6 @@
 module Stage0.Interfaces
 
-import Data.Linear
+import public Data.Linear
 import Stage0.BoxInt
 
 %default total
@@ -112,7 +112,6 @@ implementation (LEq a, LEq b) => LEq (LPair a b) where
         Builtin.(#) resR (Builtin.(#) r1' r2') = lEq r1 r2
         res = if resL then resR else case lconsume resR of () => False
     in Builtin.(#) res (Builtin.(#) (l1' # r1') (l2' # r2'))
-
 public export
 data Ur : Type -> Type where
   MkUr : a -> Ur a

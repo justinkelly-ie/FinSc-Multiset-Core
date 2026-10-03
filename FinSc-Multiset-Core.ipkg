@@ -1,5 +1,5 @@
 package FinSc-Multiset-Core
-version = 0.3.3
+version = 0.3.4
 authors = "Justin Kelly"
 brief   = "Layer 1 Ground Linear QTT Multiset Memory Kernel."
 
@@ -9,6 +9,8 @@ sourcedir = "src"
 modules = Core,
           Stage0.BoxInt,
           Stage0.WitnessLedger,
+          Stage0.LinearBuffer,
+          Stage0.UniverseState,
           Stage0.BoxNat,
           Stage0.DepMaxel,
           Stage0.DepMultiset,
@@ -38,6 +40,9 @@ modules = Core,
           Stage1.Category.Adjunction,
           Stage1.Category.Adjunction2,
           Stage1.Category.Comonad,
+          Stage1.MultisetDuality,
+          Stage1.HigherDuality,
+          Stage1.SpatialStencil,
           Stage1.ConjugateHylo,
           Stage1.FourGeometries,
           Stage1.MultisetTensor,
@@ -58,5 +63,6 @@ modules = Core,
           Stage1.TypeTheory.Smooth13,
           Stage1.UnixelFraction,
           Stage1.VexelMaxel,
+          Stage1.MetricSignature,
 
           Stage2.ThreeLevel

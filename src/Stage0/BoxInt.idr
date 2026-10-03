@@ -105,21 +105,21 @@ public export
 Cast Integer BoxInt where
   cast = intToBoxInt
 
+||| Converts BoxInt to Nat, clamping negative values to 0.
+||| For absolute-value conversion use absBox first.
 %inline public export
 boxToNat : BoxInt -> Nat
-boxToNat (MkBoxInt v) =
-  case integerToNat v of
-    Z => integerToNat (-v)
-    S k => S k
+boxToNat (MkBoxInt v) = if v <= 0 then 0 else integerToNat v
 
 public export
 Cast BoxInt Nat where
   cast = boxToNat
 
+||| Returns the absolute value of a BoxInt as a BoxInt.
+||| Does not go through boxToNat — safe for negative inputs.
 %inline public export
 absBox : BoxInt -> BoxInt
-absBox (MkBoxInt v) =
-  MkBoxInt (natToInteger (boxToNat (MkBoxInt v)))
+absBox (MkBoxInt v) = MkBoxInt (if v < 0 then -v else v)
 
 %inline public export
 Eq BoxInt where
@@ -144,6 +144,14 @@ boxSub = subBox
 %inline public export
 boxMult : BoxInt -> BoxInt -> BoxInt
 boxMult (MkBoxInt a) (MkBoxInt b) = MkBoxInt (a * b)
+
+%inline public export
+boxMul : BoxInt -> BoxInt -> BoxInt
+boxMul = mulBox
+
+%inline public export
+natToBox : Nat -> BoxInt
+natToBox = natToBoxInt
 
 public export
 record NonZeroBoxInt where
