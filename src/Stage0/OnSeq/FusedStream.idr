@@ -128,7 +128,34 @@ zipWithStream {a, b, c} f (MkStream {s=sA} nextA seedA) (MkStream {s=sB} nextB s
       Skip sb' => Skip (sa, sb', Just x)
       Yield y sb' => Yield (f x y) (sa, sb', Nothing)
 
-||| Deforested stream left fold accumulator.
+||| Total Nat fuel-bounded stream left fold accumulator.
+public export
+foldStreamNat : (fuel : Nat) -> (b -> a -> b) -> b -> FusedStream a -> b
+foldStreamNat Z _ acc _ = acc
+foldStreamNat (S f) fn acc0 (MkStream {s} next seed) = loop f seed acc0
+  where
+    loop : Nat -> s -> b -> b
+    loop Z _ currentAcc = currentAcc
+    loop (S f') st currentAcc = case next st of
+      Done => currentAcc
+      Skip st' => loop f' st' currentAcc
+      Yield x st' => loop f' st' (fn currentAcc x)
+
+||| Total Data.Fuel stream left fold accumulator.
+public export
+foldStreamFuel : Fuel -> (b -> a -> b) -> b -> FusedStream a -> b
+foldStreamFuel Dry _ acc _ = acc
+foldStreamFuel (More f) fn acc0 (MkStream {s} next seed) = loop f seed acc0
+  where
+    loop : Fuel -> s -> b -> b
+    loop Dry _ currentAcc = currentAcc
+    loop (More f') st currentAcc = case next st of
+      Done => currentAcc
+      Skip st' => loop f' st' currentAcc
+      Yield x st' => loop f' st' (fn currentAcc x)
+
+||| Deforested stream left fold accumulator without termination bounds.
+||| For guaranteed termination under total constructivism, use foldStreamNat or foldStreamFuel.
 public export covering
 foldStream : (b -> a -> b) -> b -> FusedStream a -> b
 foldStream {a, b} f acc0 (MkStream {s} next seed) = loop seed acc0
