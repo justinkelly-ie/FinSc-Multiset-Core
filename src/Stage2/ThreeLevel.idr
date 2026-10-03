@@ -1,6 +1,6 @@
 module Stage2.ThreeLevel
 
-import Stage1.Category.Adjunction
+import Stage1.MultisetDuality
 import Stage0.Multiset
 import Stage1.TypeTheory.TwoLevel
 

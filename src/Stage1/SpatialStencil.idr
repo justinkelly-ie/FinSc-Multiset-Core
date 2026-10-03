@@ -53,44 +53,11 @@ public export
                           stagedApplyStencil (quote rule) (quote grid) = applyStencil rule grid
 prfStagedApplyStencil _ _ = Refl
 
---------------------------------------------------------------------------------
--- BACKWARDS COMPATIBILITY ALIASES FOR CATEGORY-THEORETIC COMONAD NAMES
---------------------------------------------------------------------------------
-
-||| @deprecated Use SpatialStencil instead of CellularComonad.
-public export
-CellularComonad : (Type -> Type) -> Type
-CellularComonad = SpatialStencil
-
-||| @deprecated Use SpatialStencil instead of MultisetComonad.
-public export
-MultisetComonad : (Type -> Type) -> Type
-MultisetComonad = SpatialStencil
-
-||| @deprecated Use focalToken instead of extract.
-%inline public export
-extract : SpatialStencil w => w a -> a
-extract = focalToken
-
-||| @deprecated Use neighborhoodShift instead of duplicate.
-%inline public export
-duplicate : SpatialStencil w => w a -> w (w a)
-duplicate = neighborhoodShift
-
-||| @deprecated Use applyStencil instead of extend.
-%inline public export
-extend : SpatialStencil w => (w a -> b) -> w a -> w b
-extend = applyStencil
-
 ||| Duality-to-stencil transition: A Multiset Duality (Push ⇋ Pull) generates a local round-trip operator.
 public export
 dualityToStencil : MultisetDuality l r -> l a -> l a
 dualityToStencil dual x = pushToken @{dual} (pullToken @{dual} x)
 
-||| @deprecated Use dualityToStencil.
-public export
-adjunctionToComonad : MultisetDuality l r -> l a -> l a
-adjunctionToComonad = dualityToStencil
 
 public export
 implementation SpatialStencil GridContext where

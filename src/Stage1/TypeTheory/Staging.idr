@@ -6,6 +6,8 @@
 module Stage1.TypeTheory.Staging
 
 import public Stage1.TypeTheory.TwoLevel
+import Stage0.BoxInt
+import Stage0.Multiset
 
 %default total
 
@@ -93,4 +95,85 @@ prfPresProdInv (MkStrict _) (MkStrict _) = Refl
 public export
 0 prfPresProd : (qp : Lift (a, b)) -> presProdInv (presProd qp) = qp
 prfPresProd (MkStrict (_, _)) = Refl
+
+------------------------------------------------------------------------
+-- 4. BINDING-TIME MULTISET COMBINATORS
+------------------------------------------------------------------------
+
+||| 2LTT Staged Multiset Union:
+||| Combines two staged multiset boxes under 2LTT lifting.
+public export
+stagedMultisetUnion : Eq a => Lift (Box a) -> Lift (Box a) -> Lift (Box a)
+stagedMultisetUnion qb1 qb2 = quote (unionBox (splice qb1) (splice qb2))
+
+||| 2LTT Staged Multiset Empty Constructor.
+public export
+stagedEmptyBox : Lift (Box a)
+stagedEmptyBox = quote emptyBox
+
+||| 2LTT Staged Multiset Singleton Constructor.
+public export
+stagedUnixelBox : a -> BoxInt -> Lift (Box a)
+stagedUnixelBox x w = quote (unixelBox x w)
+
+||| 2LTT Staged Multiset Lookup:
+||| Splices staged multiset and queries multiplicity at the object level.
+public export
+stagedLookupBox : Eq a => a -> Lift (Box a) -> BoxInt
+stagedLookupBox x qb = lookupBox x (splice qb)
+
+||| QTT 0 Erased Proof Witness: Staged Multiset Union Invariant
+public export
+0 prfStagedMultisetUnion : Eq a => (b1 : Box a) -> (b2 : Box a) ->
+                          splice (stagedMultisetUnion (quote b1) (quote b2)) = unionBox b1 b2
+prfStagedMultisetUnion _ _ = Refl
+
+||| 2LTT Staged Multiset Consolidation:
+||| Consolidates and sums duplicate tokens at compile time (U_1),
+||| emitting an irreducible, canonical multiset at Level 0 (U_0).
+public export
+stagedConsolidateBox : Eq a => Lift (Box a) -> Lift (Box a)
+stagedConsolidateBox qb = quote (consolidateBox (splice qb))
+
+||| 2LTT Staged Charge Annihilation:
+||| Annihilates opposite sign discrete tokens (Pos and Neg) during staging,
+||| ensuring zero-weight tokens never allocate space in the object program.
+public export
+stagedAnnihilateBox : Eq a => Lift (Box a) -> Lift (Box a)
+stagedAnnihilateBox qb = quote (consolidateBox (splice qb))
+
+||| QTT 0 Erased Proof Witness: Staged Consolidation Invariant
+public export
+0 prfStagedConsolidateInvariant : Eq a => (b : Box a) ->
+                                 splice (stagedConsolidateBox (quote b)) = consolidateBox b
+prfStagedConsolidateInvariant _ = Refl
+
+------------------------------------------------------------------------
+-- 5. LINEAR 2LTT (LQTT) STAGED CODE MODALITY
+------------------------------------------------------------------------
+
+||| Linear 2LTT Staged Code Modality:
+||| Encapsulates a linear runtime object term that must be consumed exactly once.
+public export
+record LinearLift (a : Type) where
+  constructor MkLinearLift
+  unwrapLinear : a
+
+||| Linear quote: lifts an object term into a LinearLift container.
+public export
+quoteLinear : a -> LinearLift a
+quoteLinear x = MkLinearLift x
+
+||| Linear splice: extracts the underlying linear object term with multiplicity 1.
+public export
+spliceLinear : (1 q : LinearLift a) -> a
+spliceLinear (MkLinearLift x) = x
+
+||| QTT 0 Erased Proof Witness: Linear Staging Round-Trip Invariance
+public export
+0 prfLinearStagingRoundtrip : (x : a) -> spliceLinear (quoteLinear x) = x
+prfLinearStagingRoundtrip _ = Refl
+
+
+
 

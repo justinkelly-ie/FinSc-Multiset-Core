@@ -1,6 +1,6 @@
 module Stage1.TypeTheory.TwoLevel
 
-import Stage1.Category.Adjunction
+import Stage1.MultisetDuality
 import Stage0.Multiset
 
 %default total

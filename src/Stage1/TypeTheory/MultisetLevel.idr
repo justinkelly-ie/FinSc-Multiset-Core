@@ -75,3 +75,36 @@ prfInverseSpliceQuoteMultiset (MkLevelMultiset _) = Refl
 public export
 0 prfInverseSpliceQuoteBox : {n : Nat} -> (b : LevelBox n a) -> spliceLevelBox (quoteLevelBox b) = b
 prfInverseSpliceQuoteBox (MkLevelBox _) = Refl
+
+------------------------------------------------------------------------
+-- 4. INTENSIONAL MULTISET GENERATOR (U_1 SPATIAL CARRIER)
+------------------------------------------------------------------------
+
+||| 2LTT Level 1 Intensional Multiset:
+||| Mathematical specification of a multiset as a finite support carrier paired
+||| with an intensional multiplicity generator function (a -> BoxInt).
+public export
+record IntensionalBox (a : Type) where
+  constructor MkIntensionalBox
+  support        : List a
+  multiplicityFn : a -> BoxInt
+
+||| Quotes an intensional rule and support into a Level 1 IntensionalBox.
+public export
+quoteIntensional : List a -> (a -> BoxInt) -> IntensionalBox a
+quoteIntensional supp gen = MkIntensionalBox supp gen
+
+||| Splices an IntensionalBox down to an extensional Level 0 concrete Box container.
+public export
+spliceIntensionalToBox : Eq a => IntensionalBox a -> Box a
+spliceIntensionalToBox (MkIntensionalBox supp gen) =
+  let rawPairs = map (\x => (x, gen x)) supp
+      filtered = filter (\(_, w) => unwrapBox w /= 0) rawPairs
+  in consolidateBox (MkBox filtered)
+
+||| Definitional inverse law for intensional multiset term evaluation.
+public export
+0 inverseIntensionalEvaluation : (supp : List a) -> (gen : a -> BoxInt) -> (x : a) ->
+                                 multiplicityFn (quoteIntensional supp gen) x = gen x
+inverseIntensionalEvaluation _ _ _ = Refl
+

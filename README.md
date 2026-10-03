@@ -3,11 +3,14 @@
 [![Idris 2 Verification](https://img.shields.io/badge/Idris_2-0.8.0-blue.svg)](https://www.idris-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Layer 1 Base Discrete Box Arithmetic, Multisets & Multiset Adjunction Foundations for Idris 2**
+> [!IMPORTANT]
+> **DEPRECATED**: `FinSc-Multiset-Core` has been decoupled and fully superseded by:
+> - [`FinSc-Multiset`](file:///var/home/justin/Projects/FinSc-Multiset) (Layer 0a Ground Multiset Kernel v0.4.0)
+> - [`FinSc-Metric-Substrate`](file:///var/home/justin/Projects/FinSc-Metric-Substrate) (Layer 0b 4-Geometries Spacetime Substrate v0.4.0)
+> All 16 domain libraries and 16 wikis have migrated to the decoupled packages. This package is retained solely for historical reference.
 
-`FinSc-Multiset-Core` forms **Layer 1** of the 10-layer constructive non-linear multiset science framework. It provides foundational discrete mathematical primitives, multiset monoids, linear QTT resource channels, scale transformation interfaces, and multiset adjunction posets—all built without continuous real numbers or floating-point approximations.
+**Layer 1 Base Discrete Box Arithmetic, Multisets & Multiset Adjunction Foundations for Idris 2 (DEPRECATED)**
 
----
 
 ## 📦 Core Library Architecture & Staging
 

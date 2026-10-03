@@ -126,8 +126,12 @@ quadStreamTotalMass (MkQuadStream e h p s) =
 
 ||| Static compile-time witness verifying lens get-set identity property.
 public export
-0 verifyQuadLensGetSetIdentity : (n : BoxInt) -> n = n
-verifyQuadLensGetSetIdentity = prfRefl
+0 verifyQuadLensGetSetIdentity : (qs : QuadStreamMultiset a) -> (ch : QuadStreamChannel) ->
+  getQuadChannel ch (setQuadChannel ch (getQuadChannel ch qs) qs) = getQuadChannel ch qs
+verifyQuadLensGetSetIdentity (MkQuadStream e h p s) EllipticSector = Refl
+verifyQuadLensGetSetIdentity (MkQuadStream e h p s) HyperbolicSector = Refl
+verifyQuadLensGetSetIdentity (MkQuadStream e h p s) ParabolicSector = Refl
+verifyQuadLensGetSetIdentity (MkQuadStream e h p s) SubstrateSector = Refl
 
 --------------------------------------------------------------------------------
 -- 2. 55-STATE SUBSTRATE LAW LEDGER & PRIMORIAL 210 BUDGET
