@@ -18,14 +18,14 @@ quoteOnSeqMultiset : Nat -> (Nat -> Multiset BoxInt a) -> LiftOnSeq (Multiset Bo
 quoteOnSeqMultiset start f = MkOnSeq start f
 
 ||| Splices a Stage 1 static OnSeq multiset sequence directly down into a Stage 0 consolidated Box multiset monoid.
-public export covering
+public export
 spliceOnSeqToBox : Eq a => LiftOnSeq (Multiset BoxInt a) -> (idx : Nat) -> (len : Nat) -> Box a
 spliceOnSeqToBox {a} seq idx len =
   let strm = spliceOnSeqToStream seq idx len
-  in foldStream (\acc, m =>
-                   let pairs = multisetToList m
-                   in foldl (\innerAcc, (k, w) => insertBox k w innerAcc) acc pairs)
-                emptyBox strm
+  in foldStreamNat len (\acc, m =>
+                          let pairs = multisetToList m
+                          in foldl (\innerAcc, (k, w) => insertBox k w innerAcc) acc pairs)
+                       emptyBox strm
 
 ------------------------------------------------------------------------
 -- 2. DEFINITIONAL INVERSE LAWS & PROOFS

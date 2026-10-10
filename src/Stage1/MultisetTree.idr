@@ -326,7 +326,7 @@ streamMultisetTree : MultisetTree a -> FusedStream (a, Nat)
 streamMultisetTree tree = stream (treeToList tree)
 
 ||| Evaluates a stream catamorphism fold in parallel across the left and right subtrees of a MultisetTree.
-public export covering
+public export
 fusedParallelTreeFold : Fuel -> (a -> Nat -> b -> b) -> b -> (b -> b -> b) -> MultisetTree a -> b
 fusedParallelTreeFold _ _ acc0 _ Leaf = acc0
 fusedParallelTreeFold f stepAcc acc0 combineBin (Node _ left key val right) =
@@ -336,13 +336,13 @@ fusedParallelTreeFold f stepAcc acc0 combineBin (Node _ left key val right) =
   in combineBin (combineBin leftRes nodeRes) rightRes
 
 ||| Audit witness verifying parallel MultisetTree stream partition fold equivalence.
-public export covering
+public export
 auditFusedParallelTreeFoldProof : Bool
 auditFusedParallelTreeFoldProof =
   let t0 : MultisetTree BoxInt = Leaf
       t1 = insertTokenTree (intToBoxInt 10) 5 t0
       t2 = insertTokenTree (intToBoxInt 20) 3 t1
       t3 = insertTokenTree (intToBoxInt 30) 2 t2
-      totalSum = fusedParallelTreeFold (limit 10) (\_, cnt, acc => cnt + acc) 0 (+) t3
+      totalSum = fusedParallelTreeFold (limit 4) (\_, cnt, acc => cnt + acc) 0 (+) t3
   in totalSum == 10
 

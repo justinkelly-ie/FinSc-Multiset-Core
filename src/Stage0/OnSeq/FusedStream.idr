@@ -6,6 +6,7 @@ import Data.Nat
 import Data.Fuel
 import Stage0.BoxInt
 import Stage0.Multiset
+import public Stage0.StructuralFuel
 
 %default total
 
@@ -37,17 +38,19 @@ public export
 data FusedStream : (a : Type) -> Type where
   MkStream : (next : s -> Step s a) -> (seed : s) -> FusedStream a
 
+||| Step function for converting a List into a stream.
+public export
+listStep : List a -> Step (List a) a
+listStep [] = Done
+listStep (y :: ys) = Yield y ys
+
 ||| Converts a List storage container into a deforested stream.
-%inline public export
+public export
 stream : List a -> FusedStream a
-stream {a} xs = MkStream {s = List a} nextStep xs
-  where
-    nextStep : List a -> Step (List a) a
-    nextStep [] = Done
-    nextStep (y :: ys) = Yield y ys
+stream xs = MkStream listStep xs
 
 ||| Constructs a deforested stream from a state transition step function (Anamorphism).
-%inline public export
+public export
 unfoldStream : (s -> Step s a) -> s -> FusedStream a
 unfoldStream next seed = MkStream next seed
 
@@ -64,11 +67,23 @@ fusedHylomorphism (More f') next f acc seed = loop f' seed acc
       Skip st' => loop f'' st' currentAcc
       Yield x st' => loop f'' st' (f x currentAcc)
 
+||| Total Nat fuel-bounded stream generator evaluation directly into an accumulator without intermediate allocations (Hylomorphism).
+public export
+fusedHylomorphismNat : (fuel : Nat) -> (s -> Step s a) -> (a -> b -> b) -> b -> s -> b
+fusedHylomorphismNat Z _ _ acc _ = acc
+fusedHylomorphismNat (S f) next fStep acc seed = loop f seed acc
+  where
+    loop : Nat -> s -> b -> b
+    loop Z _ currentAcc = currentAcc
+    loop (S f') st currentAcc = case next st of
+      Done => currentAcc
+      Skip st' => loop f' st' currentAcc
+      Yield x st' => loop f' st' (fStep x currentAcc)
+
 ||| Total Fuel-driven stream evaluation producing a List container.
 public export
 runFueledStream : Fuel -> FusedStream a -> List a
-runFueledStream Dry _ = []
-runFueledStream (More f) (MkStream {s} step s0) = loop f s0
+runFueledStream fuel (MkStream {s} step s0) = loop fuel s0
   where
     loop : Fuel -> s -> List a
     loop Dry _ = []
@@ -77,35 +92,51 @@ runFueledStream (More f) (MkStream {s} step s0) = loop f s0
       Skip st' => loop f' st'
       Yield x st' => x :: loop f' st'
 
+||| Total Nat fuel-driven stream evaluation producing a List container.
+public export
+runFueledStreamNat : (fuel : Nat) -> FusedStream a -> List a
+runFueledStreamNat fuel (MkStream {s} step s0) = loop fuel s0
+  where
+    loop : Nat -> s -> List a
+    loop Z _ = []
+    loop (S f') st = case step st of
+      Done => []
+      Skip st' => loop f' st'
+      Yield x st' => x :: loop f' st'
+
 ------------------------------------------------------------------------
 -- DEFORESTED STREAM FUSION COMBINATOR LIBRARY
 ------------------------------------------------------------------------
 
+||| Top-level step function for deforested stream map.
+public export
+mapStep : (a -> b) -> (s -> Step s a) -> s -> Step s b
+mapStep f next st = case next st of
+  Done => Done
+  Skip st' => Skip st'
+  Yield x st' => Yield (f x) st'
+
 ||| Deforested stream map operator.
-%inline public export
+public export
 mapStream : (a -> b) -> FusedStream a -> FusedStream b
-mapStream {a, b} f (MkStream {s} next seed) = MkStream nextStep seed
-  where
-    nextStep : s -> Step s b
-    nextStep st = case next st of
-      Done => Done
-      Skip st' => Skip st'
-      Yield x st' => Yield (f x) st'
+mapStream f (MkStream next seed) = MkStream (mapStep f next) seed
 
 public export
 Functor FusedStream where
   map = mapStream
 
+||| Top-level step function for deforested stream filter.
+public export
+filterStep : (a -> Bool) -> (s -> Step s a) -> s -> Step s a
+filterStep p next st = case next st of
+  Done => Done
+  Skip st' => Skip st'
+  Yield x st' => if p x then Yield x st' else Skip st'
+
 ||| Deforested stream filter operator.
-%inline public export
+public export
 filterStream : (a -> Bool) -> FusedStream a -> FusedStream a
-filterStream {a} p (MkStream {s} next seed) = MkStream nextStep seed
-  where
-    nextStep : s -> Step s a
-    nextStep st = case next st of
-      Done => Done
-      Skip st' => Skip st'
-      Yield x st' => if p x then Yield x st' else Skip st'
+filterStream p (MkStream next seed) = MkStream (filterStep p next) seed
 
 ||| Alias for deforested stream sifting operator.
 %inline public export
@@ -131,8 +162,7 @@ zipWithStream {a, b, c} f (MkStream {s=sA} nextA seedA) (MkStream {s=sB} nextB s
 ||| Total Nat fuel-bounded stream left fold accumulator.
 public export
 foldStreamNat : (fuel : Nat) -> (b -> a -> b) -> b -> FusedStream a -> b
-foldStreamNat Z _ acc _ = acc
-foldStreamNat (S f) fn acc0 (MkStream {s} next seed) = loop f seed acc0
+foldStreamNat fuel fn acc0 (MkStream {s} next seed) = loop fuel seed acc0
   where
     loop : Nat -> s -> b -> b
     loop Z _ currentAcc = currentAcc
@@ -144,8 +174,7 @@ foldStreamNat (S f) fn acc0 (MkStream {s} next seed) = loop f seed acc0
 ||| Total Data.Fuel stream left fold accumulator.
 public export
 foldStreamFuel : Fuel -> (b -> a -> b) -> b -> FusedStream a -> b
-foldStreamFuel Dry _ acc _ = acc
-foldStreamFuel (More f) fn acc0 (MkStream {s} next seed) = loop f seed acc0
+foldStreamFuel fuel fn acc0 (MkStream {s} next seed) = loop fuel seed acc0
   where
     loop : Fuel -> s -> b -> b
     loop Dry _ currentAcc = currentAcc
@@ -154,25 +183,40 @@ foldStreamFuel (More f) fn acc0 (MkStream {s} next seed) = loop f seed acc0
       Skip st' => loop f' st' currentAcc
       Yield x st' => loop f' st' (fn currentAcc x)
 
-||| Deforested stream left fold accumulator without termination bounds.
-||| For guaranteed termination under total constructivism, use foldStreamNat or foldStreamFuel.
-public export covering
+||| Deforested stream left fold accumulator bounded by model-derived Master Substrate Primorial Ground State capacity (Rule 03).
+||| For custom fuel envelopes, use foldStreamBoxNat, foldStreamGoh, or foldStreamNat directly.
+public export
 foldStream : (b -> a -> b) -> b -> FusedStream a -> b
-foldStream {a, b} f acc0 (MkStream {s} next seed) = loop seed acc0
-  where
-    covering
-    loop : s -> b -> b
-    loop st acc = case next st of
-      Done => acc
-      Skip st' => loop st' acc
-      Yield x st' => loop st' (f acc x)
+foldStream f acc0 strm = foldStreamNat (boxNatToNat masterSubstrateGohFuel) f acc0 strm
+
+||| Total stream fold accumulator using BoxNat Goh factorisation fuel.
+public export
+foldStreamBoxNat : BoxNat -> (b -> a -> b) -> b -> FusedStream a -> b
+foldStreamBoxNat bn f acc0 strm = foldStreamNat (boxNatToNat bn) f acc0 strm
+
+||| Total stream fold accumulator using model-derived Goh fuel for a given size hint.
+public export
+foldStreamGoh : (sizeHint : Nat) -> (b -> a -> b) -> b -> FusedStream a -> b
+foldStreamGoh sizeHint f acc0 strm = foldStreamBoxNat (gohFuel sizeHint) f acc0 strm
+
+||| Evaluates a stream generator directly into an accumulator using BoxNat Goh factorisation fuel.
+public export
+fusedHylomorphismBoxNat : BoxNat -> (s -> Step s a) -> (a -> b -> b) -> b -> s -> b
+fusedHylomorphismBoxNat bn next stepAcc acc0 seed =
+  fusedHylomorphismNat (boxNatToNat bn) next stepAcc acc0 seed
+
+||| Evaluates a stream generator using canonical model-derived Goh fuel for a given size hint.
+public export
+fusedHylomorphismGoh : (sizeHint : Nat) -> (s -> Step s a) -> (a -> b -> b) -> b -> s -> b
+fusedHylomorphismGoh sizeHint next stepAcc acc0 seed =
+  fusedHylomorphismBoxNat (gohFuel sizeHint) next stepAcc acc0 seed
 
 public export
 Applicative FusedStream where
   pure x = unfoldStream (\b => if b then Yield x False else Done) True
   fs <*> xs = mapStream (\(f, x) => f x) (zipWithStream (\f, x => (f, x)) fs xs)
 
-public export covering
+public export
 Foldable FusedStream where
   foldr f z st = foldStream (flip f) z st
   foldl f z st = foldStream f z st
@@ -188,6 +232,22 @@ fusedTake {a} n (MkStream {s} next seed) = MkStream nextStep (n, seed)
       Done => Done
       Skip st' => Skip (S k, st')
       Yield x st' => Yield x (k, st')
+
+||| Deforested stream take operator bounded by canonical Goh BoxNat fuel across both yields and skips.
+public export
+fusedTakeGoh : BoxNat -> FusedStream a -> FusedStream a
+fusedTakeGoh fuel (MkStream {s} next seed) =
+  let maxSteps = boxNatToNat (gohFuelBox fuel)
+      n = boxNatToNat fuel
+  in MkStream nextStep (n, maxSteps, seed)
+  where
+    nextStep : (Nat, Nat, s) -> Step (Nat, Nat, s) a
+    nextStep (Z, _, _) = Done
+    nextStep (_, Z, _) = Done
+    nextStep (S k, S steps, st) = case next st of
+      Done => Done
+      Skip st' => Skip (S k, steps, st')
+      Yield x st' => Yield x (k, steps, st')
 
 ||| Deforested stream drop operator.
 %inline public export
@@ -305,23 +365,29 @@ transduceStream {a, b} (MkTransducer {s=sT} stepT seedT) (MkStream {s=sS} stepS 
         Yield y st' => Yield y (ss', st')
 
 ||| Converts a Multiset container into a deforested FusedStream.
-%inline public export
+public export
 multisetToStream : Multiset c a -> FusedStream (a, c)
-multisetToStream mset = MkStream nextStep (multisetToList mset)
-  where
-    nextStep : List (a, c) -> Step (List (a, c)) (a, c)
-    nextStep [] = Done
-    nextStep (y :: ys) = Yield y ys
+multisetToStream mset = MkStream listStep (multisetToList mset)
 
 ||| Fueled total stream fold accumulator.
 public export
 fueLedFoldStream : Fuel -> (b -> a -> b) -> b -> FusedStream a -> b
 fueLedFoldStream f' f acc (MkStream next seed) = fusedHylomorphism f' next (flip f) acc seed
 
-||| Converts a deforested FusedStream back into a Multiset BoxInt container (Total Fueled Fold).
+||| Total Nat fuel-bounded stream fold accumulator.
+public export
+fueLedFoldStreamNat : (fuel : Nat) -> (b -> a -> b) -> b -> FusedStream a -> b
+fueLedFoldStreamNat fuel f acc (MkStream next seed) = fusedHylomorphismNat fuel next (flip f) acc seed
+
+||| Converts a deforested FusedStream back into a Multiset BoxInt container (Fueled Fold).
+public export
+streamToMultisetFuel : Fuel -> Eq a => FusedStream (a, BoxInt) -> Multiset BoxInt a
+streamToMultisetFuel f' strm = fueLedFoldStream f' (\acc, (k, v) => insertItemBox k v acc) ZeroM strm
+
+||| Converts a deforested FusedStream back into a Multiset BoxInt container bounded by canonical Primorial 210 capacity (Rule 03).
 public export
 streamToMultiset : Eq a => FusedStream (a, BoxInt) -> Multiset BoxInt a
-streamToMultiset strm = fueLedFoldStream (limit 1000000) (\acc, (k, v) => insertItemBox k v acc) ZeroM strm
+streamToMultiset strm = streamToMultisetFuel substrateFuel strm
 
 
 
@@ -330,29 +396,65 @@ streamToMultiset strm = fueLedFoldStream (limit 1000000) (\acc, (k, v) => insert
 -- 3. WILDBERGER MAXEL MATRIX UNIT OPERATOR & STREAM DEFORESTATION
 ------------------------------------------------------------------------
 
-||| Tensor Maxel modeled as a matrix unit pixel [source, target] carrying a sector tag.
+||| Tensor Maxel Unit modeled as a matrix unit pixel [source, target] carrying a sector tag.
 public export
-record Maxel where
-  constructor MkMaxel
+record MaxelUnit where
+  constructor MkMaxelUnit
   source : Int
   target : Int
   sector : GeometrySector
 
 public export
-Eq Maxel where
-  (MkMaxel s1 t1 m1) == (MkMaxel s2 t2 m2) = s1 == s2 && t1 == t2 && m1 == m2
+Eq MaxelUnit where
+  (MkMaxelUnit s1 t1 m1) == (MkMaxelUnit s2 t2 m2) = s1 == s2 && t1 == t2 && m1 == m2
 
 public export
-Ord Maxel where
-  compare (MkMaxel s1 t1 _) (MkMaxel s2 t2 _) = 
+Ord MaxelUnit where
+  compare (MkMaxelUnit s1 t1 _) (MkMaxelUnit s2 t2 _) = 
     case compare s1 s2 of
       EQ => compare t1 t2
       other => other
 
+||| Canonical 2LTT type alias: Maxel is the primitive matrix unit basis token in Stage0.OnSeq.FusedStream.
+public export
+0 Maxel : Type
+Maxel = MaxelUnit
+
+||| Smart constructor maintaining full backwards compatibility.
+public export
+%inline
+MkMaxel : Int -> Int -> GeometrySector -> MaxelUnit
+MkMaxel = MkMaxelUnit
+
+||| Vector Vexel Unit modeled as a single coordinate pixel [index] carrying a sector tag.
+public export
+record VexelUnit where
+  constructor MkVexelUnit
+  index  : Int
+  sector : GeometrySector
+
+public export
+Eq VexelUnit where
+  (MkVexelUnit i1 s1) == (MkVexelUnit i2 s2) = i1 == i2 && s1 == s2
+
+public export
+Ord VexelUnit where
+  compare (MkVexelUnit i1 _) (MkVexelUnit i2 _) = compare i1 i2
+
+||| 2LTT Carrier Duality: Coinductive Streaming Matrix Unit
+public export
+0 MaxelStream : Type
+MaxelStream = FusedStream (MaxelUnit, BoxInt)
+
+||| 2LTT Carrier Duality: Coinductive Streaming Vector Unit
+public export
+0 VexelStream : Type
+VexelStream = FusedStream (VexelUnit, BoxInt)
+
 ||| Coinductive infinite Maxel stream representing unbounded cosmic time evolution.
 public export
 data InfMaxelStream : Type where
-  (::) : Maxel -> Inf InfMaxelStream -> InfMaxelStream
+  (::) : MaxelUnit -> Inf InfMaxelStream -> InfMaxelStream
 
 ||| Fused Maxel Matrix Unit Multiplication.
 ||| Evaluates Wildberger composition rule [a, b] * [c, d] = [a, d] iff b == c.
@@ -376,19 +478,15 @@ multiplyMaxels (MkStream {s=sL} nextL seedL) (MkStream {s=sR} nextR seedR) =
           then Yield (MkMaxel (source ml) (target mr) (sector ml)) (sl, sr', Just ml)
           else Skip (sl, sr', Just ml) -- Deforests non-matching cross-terms to Skip!
 
-||| Folds a deforested stream into a consolidated SortedMap layout.
-public export covering
-unstreamToMap : FusedStream Maxel -> SortedMap Maxel Nat
-unstreamToMap (MkStream {s} next seed) = loop seed (empty {v=Nat})
+||| Folds a deforested stream into a consolidated SortedMap layout with explicit Fuel.
+public export
+unstreamToMap : Fuel -> FusedStream Maxel -> SortedMap Maxel Nat
+unstreamToMap f strm = foldStreamFuel f updateMap (empty {v=Nat}) strm
   where
-    covering
-    loop : s -> SortedMap Maxel Nat -> SortedMap Maxel Nat
-    loop state acc = case next state of
-      Done => acc
-      Skip state' => loop state' acc
-      Yield maxel state' => case lookup maxel acc of
-        Nothing  => loop state' (insert maxel 1 acc)
-        Just val => loop state' (insert maxel (val + 1) acc)
+    updateMap : SortedMap Maxel Nat -> Maxel -> SortedMap Maxel Nat
+    updateMap acc maxel = case lookup maxel acc of
+      Nothing  => insert maxel 1 acc
+      Just val => insert maxel (val + 1) acc
 
 ------------------------------------------------------------------------
 -- 4. CONSTRUCTIVIST TERNARY MATRIX BOOTSTRAP {-1, 0, 1}^3
@@ -525,13 +623,13 @@ splitStreamHalf xs =
   in (stream leftList, stream rightList)
 
 ||| Evaluates a stream catamorphism fold over a FusedStream directly without intermediate allocations.
-public export covering
+public export
 evalStreamHylomorphism : Fuel -> (a -> b -> b) -> b -> FusedStream a -> b
 evalStreamHylomorphism f stepAcc acc0 (MkStream next seed) =
   fusedHylomorphism f next stepAcc acc0 seed
 
 ||| Evaluates a stream catamorphism fold in parallel over left and right stream partitions.
-public export covering
+public export
 fusedParallelStreamFold : Fuel -> (a -> b -> b) -> b -> (b -> b -> b) -> List a -> b
 fusedParallelStreamFold f stepAcc acc0 combineBin items =
   let (leftStrm, rightStrm) = splitStreamHalf items
@@ -540,12 +638,12 @@ fusedParallelStreamFold f stepAcc acc0 combineBin items =
   in combineBin leftRes rightRes
 
 ||| Audit witness verifying parallel stream partitioning fold equivalence.
-public export covering
+public export
 auditParallelStreamPartitionProof : Bool
 auditParallelStreamPartitionProof =
   let items : List Int = [1, 2, 3, 4, 5, 6, 7, 8]
       seqRes = foldl (+) 0 items
-      parRes = fusedParallelStreamFold (limit 20) (+) 0 (+) items
+      parRes = fusedParallelStreamFold (limit (length items)) (+) 0 (+) items
   in seqRes == parRes
 
 

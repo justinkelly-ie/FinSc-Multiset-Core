@@ -203,7 +203,7 @@ streamPull @{dual} strm = streamRightAdjoint @{dual} strm
 
 ||| Evaluates an allocation-free deforested stream generator under push producer step
 ||| and pull consumer fold (Adjoint / Dual Hylomorphism).
-public export covering
+public export
 fusedAdjointHylomorphism : Fuel -> 
                            MultisetDuality l r -> 
                            (s -> Step s (l a)) -> 
@@ -212,7 +212,6 @@ fusedAdjointHylomorphism : Fuel ->
 fusedAdjointHylomorphism Dry _ _ _ acc _ = acc
 fusedAdjointHylomorphism (More f') adj next consumerFold acc seed = loop f' seed acc
   where
-    covering
     loop : Fuel -> s -> b -> b
     loop Dry _ currentAcc = currentAcc
     loop (More f'') st currentAcc = case next st of
@@ -223,7 +222,7 @@ fusedAdjointHylomorphism (More f') adj next consumerFold acc seed = loop f' seed
         in loop f'' st' (consumerFold val currentAcc)
 
 ||| Canonical 2LTT dual hylomorphism alias
-public export covering
+public export
 fusedDualHylomorphism : Fuel -> 
                         MultisetDuality l r -> 
                         (s -> Step s (l a)) -> 

@@ -27,14 +27,14 @@ spliceOnSeqToStream seq idx len = stream (elements (getClip seq idx len))
 
 ||| 2LTT Monoid Splicing (~seq ↦ Monoid): Splices a Stage 1 static OnSeq directly down
 ||| into a Stage 0 consolidated Multiset Monoid map payload.
-public export covering
+public export
 spliceOnSeqToMonoid : Ord a => LiftOnSeq a -> (idx : Nat) -> (len : Nat) -> SortedMap a Nat
 spliceOnSeqToMonoid {a} seq idx len =
   let strm = spliceOnSeqToStream seq idx len
-  in foldStream (\acc, x => case lookup x acc of
-                              Nothing => insert x 1 acc
-                              Just v  => insert x (v + 1) acc)
-                (empty {v=Nat}) strm
+  in foldStreamNat len (\acc, x => case lookup x acc of
+                                     Nothing => insert x 1 acc
+                                     Just v  => insert x (v + 1) acc)
+                       (empty {v=Nat}) strm
 
 ------------------------------------------------------------------------
 -- 2. EXPLICIT DEFINITIONAL INVERSE LAWS

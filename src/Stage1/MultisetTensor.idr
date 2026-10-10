@@ -111,7 +111,7 @@ Eq MultisetTensorStep where
     id1 == id2 && w1 == w2
 
 ||| O(1) allocation deforested stream transducer evaluating total weight across multiset tensor elements.
-public export covering
+public export
 fusedMultisetTensorStream : Fuel -> MultisetTensor a b -> BoxInt
 fusedMultisetTensorStream f tensor =
   fusedHylomorphism f
@@ -123,7 +123,7 @@ fusedMultisetTensorStream f tensor =
     (1, tensor)
 
 ||| O(1) allocation deforested stream transducer evaluating total trace sum over diagonal multiset tensor elements.
-public export covering
+public export
 fusedComputeTensorTrace : Eq a => Fuel -> MultisetTensor a a -> BoxInt
 fusedComputeTensorTrace f tensor =
   fusedHylomorphism f

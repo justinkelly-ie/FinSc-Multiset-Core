@@ -1,6 +1,8 @@
 module Stage1.VexelMaxel
 
 import Stage0.BoxInt
+import Stage0.BoxNat
+import Stage0.StructuralFuel
 import Stage0.Multiset
 import Stage1.Order.Preorder
 import Data.List
@@ -254,20 +256,10 @@ pruneVexelTerms [] = []
 pruneVexelTerms ((s, w) :: rest) =
   if unwrapBox w == 0 then pruneVexelTerms rest else (s, w) :: pruneVexelTerms rest
 
-||| Aggregates duplicate coordinate Singletons and prunes zero-weight entries in a Vexel.
+||| Aggregates duplicate coordinate Singletons and prunes zero-weight entries in a Vexel via Multiset reduction.
 public export
 canonicalizeVexel : Vexel -> Vexel
-canonicalizeVexel (MkVexel terms) =
-  let folded = foldl insertOrAdd [] terms
-      pruned = pruneVexelTerms folded
-  in MkVexel pruned
-  where
-    insertOrAdd : List (Unixel, BoxInt) -> (Unixel, BoxInt) -> List (Unixel, BoxInt)
-    insertOrAdd [] (s, w) = [(s, w)]
-    insertOrAdd ((k, v) :: rest) (s, w) =
-      if k == s 
-        then (k, v + w) :: rest 
-        else (k, v) :: insertOrAdd rest (s, w)
+canonicalizeVexel (MkVexel terms) = MkVexel (multisetToList (fromListBox terms))
 
 public export
 pruneMaxelTerms : List (Pixel, BoxInt) -> List (Pixel, BoxInt)
@@ -275,20 +267,10 @@ pruneMaxelTerms [] = []
 pruneMaxelTerms ((p, w) :: rest) =
   if unwrapBox w == 0 then pruneMaxelTerms rest else (p, w) :: pruneMaxelTerms rest
 
-||| Aggregates duplicate coordinate Pixels and prunes zero-weight entries in a Maxel.
+||| Aggregates duplicate coordinate Pixels and prunes zero-weight entries in a Maxel via Multiset reduction.
 public export
 canonicalizeMaxel : Maxel -> Maxel
-canonicalizeMaxel (MkMaxel pxs) =
-  let folded = foldl insertOrAdd [] pxs
-      pruned = pruneMaxelTerms folded
-  in MkMaxel pruned
-  where
-    insertOrAdd : List (Pixel, BoxInt) -> (Pixel, BoxInt) -> List (Pixel, BoxInt)
-    insertOrAdd [] (p, w) = [(p, w)]
-    insertOrAdd ((k, v) :: rest) (p, w) =
-      if k == p 
-        then (k, v + w) :: rest 
-        else (k, v) :: insertOrAdd rest (p, w)
+canonicalizeMaxel (MkMaxel pxs) = MkMaxel (multisetToList (fromListBox pxs))
 
 public export
 pruneBoxelTerms : List (Voxel, BoxInt) -> List (Voxel, BoxInt)
@@ -296,20 +278,29 @@ pruneBoxelTerms [] = []
 pruneBoxelTerms ((v, w) :: rest) =
   if unwrapBox w == 0 then pruneBoxelTerms rest else (v, w) :: pruneBoxelTerms rest
 
-||| Aggregates duplicate coordinate Voxels and prunes zero-weight entries in a Boxel.
+||| Aggregates duplicate coordinate Voxels and prunes zero-weight entries in a Boxel via Multiset reduction.
 public export
 canonicalizeBoxel : Boxel -> Boxel
-canonicalizeBoxel (MkBoxel voxs) =
-  let folded = foldl insertOrAdd [] voxs
-      pruned = pruneBoxelTerms folded
-  in MkBoxel pruned
-  where
-    insertOrAdd : List (Voxel, BoxInt) -> (Voxel, BoxInt) -> List (Voxel, BoxInt)
-    insertOrAdd [] (v, w) = [(v, w)]
-    insertOrAdd ((k, val) :: rest) (v, w) =
-      if k == v 
-        then (k, val + w) :: rest 
-        else (k, val) :: insertOrAdd rest (v, w)
+canonicalizeBoxel (MkBoxel voxs) = MkBoxel (multisetToList (fromListBox voxs))
+
+------------------------------------------------------------------------
+-- QTT 0 ERASED ROUND-TRIP INVARIANT PROOFS
+------------------------------------------------------------------------
+
+||| QTT 0 Erased Proof: Canonical Vexel is idempotent under multiset round-trip.
+public export
+0 prfVexelMultisetRoundTrip : (v : Vexel) -> multisetToVexel (vexelToMultiset v) = canonicalizeVexel v
+prfVexelMultisetRoundTrip (MkVexel terms) = Refl
+
+||| QTT 0 Erased Proof: Canonical Maxel is idempotent under multiset round-trip.
+public export
+0 prfMaxelMultisetRoundTrip : (m : Maxel) -> multisetToMaxel (maxelToMultiset m) = canonicalizeMaxel m
+prfMaxelMultisetRoundTrip (MkMaxel pxs) = Refl
+
+||| QTT 0 Erased Proof: Canonical Boxel is idempotent under multiset round-trip.
+public export
+0 prfBoxelMultisetRoundTrip : (b : Boxel) -> multisetToBoxel (boxelToMultiset b) = canonicalizeBoxel b
+prfBoxelMultisetRoundTrip (MkBoxel voxs) = Refl
 
 ------------------------------------------------------------------------
 -- 4. ALGEBRAIC MULTIPLICATION: PIXELS & SINGLETONS
@@ -767,7 +758,7 @@ natGcdFuel (S f) a (S b) =
 
 public export
 natGcd : Nat -> Nat -> Nat
-natGcd a b = natGcdFuel (a + b + 10) a b
+natGcd a b = natGcdFuel (boxNatToNat (gohFuel (S (a + b)))) a b
 
 ||| A Balance Array represents a subtraction-free linear relation between n vectors (Vexels).
 ||| Positive side: sum posWeights_i * v_i

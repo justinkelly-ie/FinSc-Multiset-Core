@@ -28,7 +28,7 @@ listPipeline xs =
 
 ||| Deforested FusedStream pipeline (Zero intermediate list heap allocations).
 ||| Pipeline: foldStream (+) 0 (mapStream (+ 10) (filterStream (even) (mapStream (* 3) (stream xs))))
-public export covering
+public export
 fusedStreamPipeline : List Integer -> Integer
 fusedStreamPipeline xs =
   let strm = stream xs
@@ -38,7 +38,7 @@ fusedStreamPipeline xs =
   in foldStream (+) 0 stage3
 
 ||| Proves mathematical & observational equivalence between List baseline and FusedStream deforested pipeline.
-public export covering
+public export
 verifyPipelineEquivalence : Nat -> Bool
 verifyPipelineEquivalence n =
   let seq = generateSequence n
